@@ -1,0 +1,297 @@
+---
+title: "Generation analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+install.packages("dplyr")
+install.packages("tidyverse")
+install.packages("readr")
+
+library(dplyr)
+library(readr)
+library(magrittr)
+library(tidyverse)
+library(ggplot2)
+
+Frame_0_properties <- read_table2("Frame_0.pov")
+View(Frame_0_properties)
+frame_0 <- filter(Frame_0_properties,n_neighb == 3 | n_neighb == 4)
+
+
+Frame_38_properties <- read_table2("Frame_1.pov")
+View(Frame_38_properties)
+frame_38 <- filter(Frame_38_properties, n_neighb == 3 | n_neighb == 4)
+
+
+
+# FRAME 0
+
+q_0 <- Frame_0_properties
+f_0 <- frame_0
+hight_cell <- 134.692
+hight <- 2.5
+radius <- 90.4784
+deltaRadius <- 2.5
+
+e <- (hight_cell/2)
+f <- e - hight
+g <- 0
+h <- g + deltaRadius
+flag_0 <- TRUE 
+plag_0 <- TRUE
+coor_1_0 <- data.frame()
+coor_1_0 <- coor_1_0[-c(1:length(coor_1_0$Depth)),]
+poor_0 <- data.frame()
+poor_0 <- poor_0[-c(1:length(poor_0$Depth_0)),]
+    
+    z <- 0
+    for (z in 1:54){ ## z variara de 1 a 54 (round(hight_cell/hight))
+        
+            flag_0 <- TRUE
+            plag_0 <- TRUE
+      
+            solo_3_4 <- filter(f_0, pos <(e) & pos >(f)) # solo coordination 3 y 4
+            todo <- filter(q_0, pos < e, pos > f) # completo
+      
+            g <- 0  
+            h <- g + deltaRadius
+            y <- 0  
+            
+            poor_0 <- data.frame()
+            
+            for (y in 1:37){# y variara de 1 a round(radius/deltaRadius)
+        y
+                r_solo_3_4 <- filter(solo_3_4, RadiusXY> g & RadiusXY< h)
+                r_1_todo <- filter(todo, RadiusXY> g & RadiusXY< h)
+                w_0<- c(r_1_todo[["id"]])
+          
+          
+          
+                if(length(w_0) == 0){  # por si "r_1" NO contiene lecturas 
+           
+                                coor_00 <- data.frame("z" = z, "y" = y, "Depth_0" = f, "Radius_0" = h, "N total_0" = 0, "f0 NC 3" = 0, "f0 NC 4"= 0,"Vol_bin" = 0, "Density_bin" = 0) #"f0 Mean ShearS 3" = 0,"f0 Mean ShearS 4" = 0, 
+            
+                                if (plag_0 == TRUE){
+                                      poor_0 <- coor_00 # almacenamos coor en poor
+                                      plag_0 <- FALSE
+                                }else{
+                                      poor_0 <- bind_rows(poor_0,coor_00)
+                                }
+                                g <- h
+                                h <- g + deltaRadius  
+          
+                }else{ # si "r_solo_3_4" contiene lecturas 
+            
+                      por_coord_0 <- group_by(r_solo_3_4, n_neighb) 
+                      s_0 <- summarise(por_coord_0, n = n())
+            
+            # gestionamos las posibles ausencia de atomos con hibridación sp2 o sp3
+                      if(3 %in% r_solo_3_4[["n_neighb"]]){
+                              coor_3_0 <- count(filter(por_coord_0, n_neighb == 3), n_neighb)
+                              #shearS_3_0 <- summarise(filter(por_coord_0, n_neighb == 3), meanShearStrain_3_0 = mean(ShearStrain))
+                      }else{
+                              coor_3_0 <- data.frame(n_neighb = 3, n = 0)
+                              #shearS_3_0 <- data.frame(n_neighb = 3, meanShearStrain_3_0 = 0)
+                      }
+            
+                      if(4 %in% r_solo_3_4[["n_neighb"]]){
+                              coor_4_0 <- count(filter(por_coord_0, n_neighb == 4), n_neighb)
+                              #shearS_4_0 <- summarise(filter(por_coord_0, n_neighb == 4), meanShearStrain_4_0 = mean(ShearStrain))
+                      }else{
+                              coor_4_0<- data.frame(n_neighb = 4, n = 0)
+                              #shearS_4_0 <- data.frame(n_neighb = 4, meanShearStrain_4_0 = 0)
+                      }
+            
+            
+            # Obtenemos el numero total de átomos para una profundidad y radio especificos: 
+            
+                    por_coord_1_0 <- group_by(r_1_todo, n_neighb)
+                    s_1_0 <- summarise(por_coord_1_0, n = n())
+                      #ntotal <- colSums(s[2])
+                    ntotal <- sum(s_1_0[[2]])
+                    vol_bin <- pi*hight*(h^2-g^2)
+                    density_bin <- ntotal/vol_bin
+                    coor_5_0 <- data.frame("z" = z, "y" = y, "Depth_0" = f, "Radius_0" = h, "N total_0" = ntotal, "f0 NC 3" = coor_3_0[[2]], "f0 NC 4"= coor_4_0[[2]],"Vol_bin" = vol_bin, "Density_bin" = density_bin)# "f0 Mean ShearS 3" = shearS_3_0[[2]],"f0 Mean ShearS 4" = shearS_4_0[[2]],
+          
+                    g <- h
+                    h <- g + deltaRadius
+          
+                      if (flag_0 == TRUE){
+                              coor_1_0 <- bind_rows(coor_1_0,poor_0,coor_5_0)
+                              flag_0 <- FALSE
+                      }else {
+                             coor_1_0 <- bind_rows(coor_1_0,coor_5_0)
+              
+                      }
+                    }
+        
+              }
+      e <- f
+      f <- e - hight
+    }
+  
+    
+    
+
+
+
+# FRAME 38 
+
+
+q_38 <- Frame_38_properties
+f_38 <- frame_38
+hight_cell <- 134.692
+hight <- 2.5
+radius <- 90.4784
+deltaRadius <- 2.5
+
+a <- (hight_cell/2)
+b<- a - hight
+c <- 0
+d <- c + deltaRadius
+flag <- TRUE 
+plag <- TRUE
+coor_1 <- data.frame()
+coor_1 <- coor_1[-c(1:length(coor_1$Depth)),]
+ 
+    i <- 0                                                                             
+    for (i in 1:54){ ## i variara de 1 a 49 (round(hight_cell/hight))
+        
+            flag <- TRUE
+            plag <- TRUE
+      
+            p <- filter(f_38, pos <(a) & pos >(b)) # solo coordination 3 y 4
+            p_1 <- filter(q_38, pos < a, pos > b) # completo
+      
+            c <- 0  
+            d <- c + deltaRadius
+            k <- 0
+            
+            poor <- data.frame()
+            
+            for (k in 1:37){# k variara de 1 a round(radius/deltaRadius)
+        
+                r <- filter(p, RadiusXY> c & RadiusXY< d)# solo 3 y 4
+                r_1 <- filter(p_1, RadiusXY> c & RadiusXY< d) # todo
+                w<- c(r_1[["id"]])
+                
+                
+          
+          
+                if(length(w) == 0){  # por si "r_1" NO contiene lecturas 
+           
+                                coor <- data.frame("i" = i, "k" = k, "Depth" = b, "Radius" = d, "N total" = 0, "f38 NC 3" = 0, "f38 NC 4"= 0,"Vol_bin" = 0, "Density_bin" = 0) # "f38 Mean ShearS 3" = 0,"f38 Mean ShearS 4" = 0, 
+            
+                                if (plag == TRUE){
+                                      poor <- coor # almacenamos coor en poor
+                                      plag <- FALSE
+                                }else{
+                                      poor <- bind_rows(poor,coor)
+                                }
+                                c <- d
+                                d<- c + deltaRadius  
+          
+                }else{ # si "r" contiene lecturas 
+            
+                      por_coord <- group_by(r, n_neighb) 
+                      s <- summarise(por_coord, n = n())
+                      
+                      
+            # gestionamos las posibles ausencia de atomos con hibridación sp2 o sp3
+                      if(3 %in% r[["n_neighb"]]){
+                              coor_3 <- count(filter(por_coord, n_neighb == 3), n_neighb)
+                             # shearS_3 <- summarise(filter(por_coord, n_neighb == 1),meanShearStrain_3 = mean(ShearStrain))
+                      }else{
+                              coor_3<- data.frame(n_neighb = 3, n = 0)
+                              #shearS_3 <- data.frame(n_neighb = 1, meanShearStrain_3 = 0)
+                      }
+            
+                      if(4 %in% r[["n_neighb"]]){
+                              coor_4 <- count(filter(por_coord, n_neighb == 4), n_neighb)
+                             # shearS_4 <- summarise(filter(por_coord, n_neighb == 2), meanShearStrain_4 = mean(ShearStrain))
+                      }else{
+                              coor_4<- data.frame(n_neighb = 4, n = 0)
+                             # shearS_4 <- data.frame(n_neighb = 2, meanShearStrain_4 = 0)
+                      }
+            
+            
+            # Obtenemos el numero total de átomos para una profundidad y radio especificos: 
+            
+                    por_coord_1 <- group_by(r_1, n_neighb)
+                    s_1 <- summarise(por_coord_1, n = n())
+                      #ntotal <- colSums(s[2])
+                    ntotal <- sum(s_1[[2]])
+                    vol_bin <- pi*hight*(d^2-c^2)
+                    density_bin <- ntotal/vol_bin
+                    coor_5 <- data.frame("i" = i, "k" = k, "Depth" = b, "Radius" = d, "N total" = ntotal, "f38 NC 3" = coor_3[[2]], "f38 NC 4"= coor_4[[2]],"Vol_bin" = vol_bin, "Density_bin" = density_bin)
+          
+                    c <- d
+                    d<- c + deltaRadius
+          
+                      if (flag == TRUE){
+                              coor_1 <- bind_rows(coor_1,poor,coor_5)
+                              flag <- FALSE
+                      }else {
+                             coor_1 <- bind_rows(coor_1,coor_5)
+              
+                      }
+                    }
+        
+              }
+      a<- b
+      b<- a - hight
+    }
+
+    coor_1_bk <- coor_1[, -c(1,2)]# frame_38
+    coor_1_0_bk <- coor_1_0[,-c(1,2)]
+    juntos_0_38 <- bind_cols(coor_1_0_bk,coor_1_bk)    
+   
+    
+    
+    juntos_0_38 <- mutate(juntos_0_38, tasa_NC3 = (((f38.NC.3-f0.NC.3)/f0.NC.3)*100))
+    juntos_0_38 <- mutate(juntos_0_38, tasa_NC4 = (((f38.NC.4-f0.NC.4)/f0.NC.4)*100))
+    
+    
+    generation_NC3 <- select(juntos_0_38,Depth_0,Radius_0,tasa_NC3)
+    G_NC3_20 <- mutate(generation_NC3, Depth = Depth_0/10 , Radius = Radius_0/10)
+     
+    
+    generation_NC4 <- select(juntos_0_38,Depth_0,Radius_0,tasa_NC4,f38.NC.3, f38.NC.4)
+    G_NC4_20 <- mutate(generation_NC4, Depth = Depth_0/10 , Radius = Radius_0/10)#, sp2_sp3 = (f38.NC.3/f38.NC.4))
+    
+    
+    # Archivos para revision
+  
+     write.csv(G_NC3_20,file="cambioEnNC3_20%sp3.csv",row.names = FALSE)
+     write.csv(G_NC4_20,file = "cambioEnNC4_20%sp3.csv",row.names = FALSE)
+  write.csv(Frame_0_properties,file = "Frame_0_properties.csv",row.names = FALSE)
+write.csv(frame_0,file = "frame_0.csv",row.names = FALSE)
+write.csv(Frame_38_properties,file = "Frame_38_properties.csv",row.names = FALSE)
+write.csv(frame_38,file = "frame_38.csv",row.names = FALSE)
+    
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
